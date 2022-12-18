@@ -1,0 +1,2800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+<style>
+    #Container {
+        margin: 0px 25%;
+    }
+
+    #Wrap {
+        display: grid;
+        grid-template-columns: repeat(10, minmax(0,1fr));
+
+    }
+
+    p {
+        margin: 0;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+    }
+    .black {
+        background-color: #b4b7bd;
+    }
+
+    .white {
+        background-color: #f3f3f3;
+    }
+
+    .active {
+        border: 2px solid darkgreen;
+        height: 56px;
+    }
+
+    .echec {
+        border: 2px solid red;
+        height: 56px;
+    }
+
+    .green {
+        border: 2px solid greenyellow;
+        height: 56px;
+    }
+
+    .piece:hover {
+        cursor: pointer;
+    }
+
+</style>
+
+</head>
+<body>
+<div id="Container">
+    <div id="Wrap"></div>
+</div>
+</body>
+
+<script>
+
+    const numbers = [0,1,2,3,4,5,6,7,8,9];
+    const letters = ["w","A","B","C","D","E","F","G","H","b"];
+    const piece =[
+        {
+            id:1,
+            type:'white',
+            king:'&#9812;',
+            queen:'&#9813;',
+            rook:'&#9814;',
+            bishop:'&#9815;',
+            knight:'&#9816;',
+            pawn:'&#9817;'
+        },
+        {
+            id:2,
+            type:'black',
+            king:'&#9818;',
+            queen:'&#9819;',
+            rook:'&#9820;',
+            bishop:'&#9821;',
+            knight:'&#9822;',
+            pawn:'&#9823;'
+        }
+    ]
+    const tabPieces = [[,,,,,,,,,],
+                       [,'&#9814;','&#9816;','&#9815;','&#9813;','&#9812;','&#9815;','&#9816;','&#9814;',],
+                       [,'&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;',],
+                       [,,,,,,,,,],
+                       [,,,,,,,,,],
+                       [,,,,,,,,,],
+                       [,,,,,,,,,],
+                       [,'&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;',],
+                       [,'&#9820;','&#9822;','&#9821;','&#9819;','&#9818;','&#9821;','&#9822;','&#9820;',],
+                       [,,,,,,,,,]
+    ]
+
+    const tabJeu = [['wLRook','wLKnight','wLBishop','wQueen','wKing','wRBishop','wRKnight','wRRook'],
+                    ['wPawn1','wPawn2','wPawn3','wPawn4','wPawn5','wPawn6','wPawn7','wPawn8'],
+                    [,,,,,,,],
+                    [,,,,,,,],
+                    [,,,,,,,],
+                    [,,,,,,,],
+                    ['bPawn1','bPawn2','bPawn3','bPawn4','bPawn5','bPawn6','bPawn7','bPawn8'],
+                    ['bLRook','bLKnight','bLBishop','bQueen','bKing','bRBishop','bRKnight','bRRook']
+    ]
+    const namePieces = [['wLRook','wLKnight','wLBishop','wQueen','wKing','wRBishop','wRKnight','wRRook'],
+                        ['wPawn1','wPawn2','wPawn3','wPawn4','wPawn5','wPawn6','wPawn7','wPawn8'],
+                        ['bPawn1','bPawn2','bPawn3','bPawn4','bPawn5','bPawn6','bPawn7','bPawn8'],
+                        ['bLRook','bLKnight','bLBishop','bQueen','bKing','bRBishop','bRKnight','bRRook']
+    ]
+
+    const rookP=['wLRook','wRRook','bLRook','bRRook'];
+    const knightP=['wLKnight','wRKnight','bLKnight','bRKnight'];
+    const bishopP=['wLBishop','wRBishop','bLBishop','bRBishop'];
+    const queenP=['wQueen','bQueen',
+                  'wPawn1Q','wPawn2Q','wPawn3Q','wPawn4Q','wPawn5Q','wPawn6Q','wPawn7Q','wPawn8Q',
+                  'bPawn1Q','bPawn2Q','bPawn3Q','bPawn4Q','bPawn5Q','bPawn6Q','bPawn7Q','bPawn8Q'
+    ];
+    const kingP=['wKing','bKing'];
+    const pawnP=['wPawn1','wPawn2','wPawn3','wPawn4','wPawn5','wPawn6','wPawn7','wPawn8',
+                 'bPawn1','bPawn2','bPawn3','bPawn4','bPawn5','bPawn6','bPawn7','bPawn8'
+    ];
+
+    const whitePosition = [["A1","B1","C1","D1","E1","F1","G1","H1"],
+                           ["A2","B2","C2","D2","E2","F2","G2","H2"]
+    ]
+    const blackPosition = [["A8","B8","C8","D8","E8","F8","G8","H8"],
+                           ["A7","B7","C7","D7","E7","F7","G7","H7"]
+    ]
+
+    const positionNames = [["A1","B1","C1","D1","E1","F1","G1","H1"],
+                           ["A2","B2","C2","D2","E2","F2","G2","H2"],
+                           ["A3","B3","C3","D3","E3","F3","G3","H3"],
+                           ["A4","B4","C4","D4","E4","F4","G4","H4"],
+                           ["A5","B5","C5","D5","E5","F5","G5","H5"],
+                           ["A6","B6","C6","D6","E6","F6","G6","H6"],
+                           ["A7","B7","C7","D7","E7","F7","G7","H7"],
+                           ["A8","B8","C8","D8","E8","F8","G8","H8"]
+    ]
+
+    let whitePositionName = [['rook','knight','bishop','queen','king','bishop','knight','rook'],
+                             ['pawn','pawn','pawn','pawn','pawn','pawn','pawn','pawn']
+    ]
+    let blackPositionName = [['rook','knight','bishop','queen','king','bishop','knight','rook'],
+                             ['pawn','pawn','pawn','pawn','pawn','pawn','pawn','pawn']
+    ]
+
+
+
+    let moves = [];
+    let clicks = [];
+    let casesMoves = [];
+    let echec=0;
+    let kingPositionEchec;
+    let pass=0;
+    let turn=0;
+    let tabJeuNow = tabJeu;
+    let flagpawn=0;
+    let drapeauP=1;
+    let pawnToQueen=[];
+
+    let whitePositionNow = whitePosition;
+    let blackPositionNow = blackPosition;
+
+    let whiteDanger=[] ;
+    let blackDanger=[] ;
+
+    let zone = 0;
+    let coordonnees =[];
+    let namePA;
+    let infoPiece =[];
+
+    let whiteMiniRook=1;
+    let whiteRook=1;
+    let blackMiniRook=1;
+    let blackRook=1;
+
+    let passBMiniRook=0;
+    let passBRook=0;
+    let passWMiniRook=0;
+    let passWRook=0;
+
+    let callFunctBRook=0;
+    let callFunctRRook=0;
+
+    const wrap = document.getElementById('Wrap');
+
+    for (let i=0 ; i < 10 ; i++){
+        for (let j=0 ; j < 10 ; j++){
+            wrap.innerHTML +="<div id="+letters[j]+numbers[i]+"></div>";
+            if (j==0 || j==9){
+                if (i!=0 && i!=9){
+                    document.getElementById(letters[j]+numbers[i]).innerHTML+="<p>"+numbers[i]+"</p>";
+                    document.getElementById(letters[j]+numbers[i]).classList.add('number');
+                }else{
+                    document.getElementById(letters[j]+numbers[i]).classList.add('number');
+                }
+            }else{
+                if (i==0 || i==9){
+                    document.getElementById(letters[j]+numbers[i]).innerHTML+="<p>"+letters[j]+"</p>";
+                    document.getElementById(letters[j]+numbers[i]).classList.add('letter');
+                }else {
+                    if (tabPieces[i][j]){
+                        document.getElementById(letters[j]+numbers[i]).innerHTML+="<p id="+tabJeu[i-1][j-1]+">"+tabPieces[i][j]+"</p>";
+                        document.getElementById(letters[j]+numbers[i]).classList.add('zone');
+                        document.getElementById(tabJeu[i-1][j-1]).classList.add('piece');
+                        if (i%2==1 ){
+                            if (j%2==1){
+                                document.getElementById(letters[j]+numbers[i]).classList.add('black');
+                            }else{
+                                document.getElementById(letters[j]+numbers[i]).classList.add('white');
+                            }
+                        }else {
+                            if (j%2==0){
+                                document.getElementById(letters[j]+numbers[i]).classList.add('black');
+                            }else{
+                                document.getElementById(letters[j]+numbers[i]).classList.add('white');
+                            }
+                        }
+
+                    }else{
+                        document.getElementById(letters[j]+numbers[i]).classList.add('zone');
+                        if (i%2==1 ){
+                            if (j%2==1){
+                                document.getElementById(letters[j]+numbers[i]).classList.add('black');
+                            }else{
+                                document.getElementById(letters[j]+numbers[i]).classList.add('white');
+                            }
+                        }else {
+                            if (j%2==0){
+                                document.getElementById(letters[j]+numbers[i]).classList.add('black');
+                            }else{
+                                document.getElementById(letters[j]+numbers[i]).classList.add('white');
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    const A1 = document.getElementById('A1');
+    const A2 = document.getElementById('A2');
+    const A3 = document.getElementById('A3');
+    const A4 = document.getElementById('A4');
+    const A5 = document.getElementById('A5');
+    const A6 = document.getElementById('A6');
+    const A7 = document.getElementById('A7');
+    const A8 = document.getElementById('A8');
+    const B1 = document.getElementById('B1');
+    const B2 = document.getElementById('B2');
+    const B3 = document.getElementById('B3');
+    const B4 = document.getElementById('B4');
+    const B5 = document.getElementById('B5');
+    const B6 = document.getElementById('B6');
+    const B7 = document.getElementById('B7');
+    const B8 = document.getElementById('B8');
+    const C1 = document.getElementById('C1');
+    const C2 = document.getElementById('C2');
+    const C3 = document.getElementById('C3');
+    const C4 = document.getElementById('C4');
+    const C5 = document.getElementById('C5');
+    const C6 = document.getElementById('C6');
+    const C7 = document.getElementById('C7');
+    const C8 = document.getElementById('C8');
+    const D1 = document.getElementById('D1');
+    const D2 = document.getElementById('D2');
+    const D3 = document.getElementById('D3');
+    const D4 = document.getElementById('D4');
+    const D5 = document.getElementById('D5');
+    const D6 = document.getElementById('D6');
+    const D7 = document.getElementById('D7');
+    const D8 = document.getElementById('D8');
+    const E1 = document.getElementById('E1');
+    const E2 = document.getElementById('E2');
+    const E3 = document.getElementById('E3');
+    const E4 = document.getElementById('E4');
+    const E5 = document.getElementById('E5');
+    const E6 = document.getElementById('E6');
+    const E7 = document.getElementById('E7');
+    const E8 = document.getElementById('E8');
+    const F1 = document.getElementById('F1');
+    const F2 = document.getElementById('F2');
+    const F3 = document.getElementById('F3');
+    const F4 = document.getElementById('F4');
+    const F5 = document.getElementById('F5');
+    const F6 = document.getElementById('F6');
+    const F7 = document.getElementById('F7');
+    const F8 = document.getElementById('F8');
+    const G1 = document.getElementById('G1');
+    const G2 = document.getElementById('G2');
+    const G3 = document.getElementById('G3');
+    const G4 = document.getElementById('G4');
+    const G5 = document.getElementById('G5');
+    const G6 = document.getElementById('G6');
+    const G7 = document.getElementById('G7');
+    const G8 = document.getElementById('G8');
+    const H1 = document.getElementById('H1');
+    const H2 = document.getElementById('H2');
+    const H3 = document.getElementById('H3');
+    const H4 = document.getElementById('H4');
+    const H5 = document.getElementById('H5');
+    const H6 = document.getElementById('H6');
+    const H7 = document.getElementById('H7');
+    const H8 = document.getElementById('H8');
+
+
+
+    A1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A1');
+            namePA=tabJeuNow[0][0];
+            positionPossible(namePA);
+        }
+    })
+    A2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A2');
+            namePA=tabJeuNow[1][0];
+            positionPossible(namePA);
+        }
+    })
+    A3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A3');
+            namePA=tabJeuNow[2][0];
+            positionPossible(namePA);
+        }
+    })
+    A4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A4');
+            namePA=tabJeuNow[3][0];
+            positionPossible(namePA);
+        }
+    })
+    A5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A5');
+            namePA=tabJeuNow[4][0];
+            positionPossible(namePA);
+        }
+    })
+    A6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A6');
+            namePA=tabJeuNow[5][0];
+            positionPossible(namePA);
+        }
+    })
+    A7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A7');
+            namePA=tabJeuNow[6][0];
+            positionPossible(namePA);
+        }
+    })
+    A8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('A8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('A8');
+            namePA=tabJeuNow[7][0];
+            positionPossible(namePA);
+        }
+    })
+
+    B1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B1');
+            namePA=tabJeuNow[0][1];
+            positionPossible(namePA);
+        }
+    })
+    B2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B2');
+            namePA=tabJeuNow[1][1];
+            positionPossible(namePA);
+        }
+    })
+    B3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B3');
+            namePA=tabJeuNow[2][1];
+            positionPossible(namePA);
+        }
+    })
+    B4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B4');
+            namePA=tabJeuNow[3][1];
+            positionPossible(namePA);
+        }
+    })
+    B5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B5');
+            namePA=tabJeuNow[4][1];
+            positionPossible(namePA);
+        }
+    })
+    B6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B6');
+            namePA=tabJeuNow[5][1];
+            positionPossible(namePA);
+        }
+    })
+    B7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B7');
+            namePA=tabJeuNow[6][1];
+            positionPossible(namePA);
+        }
+    })
+    B8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('B8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('B8');
+            namePA=tabJeuNow[7][1];
+            positionPossible(namePA);
+        }
+    })
+
+    C1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C1');
+            namePA=tabJeuNow[0][2];
+            positionPossible(namePA);
+        }
+    })
+    C2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C2');
+            namePA=tabJeuNow[1][2];
+            positionPossible(namePA);
+        }
+    })
+    C3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C3');
+            namePA=tabJeuNow[2][2];
+            positionPossible(namePA);
+        }
+    })
+    C4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C4');
+            namePA=tabJeuNow[3][2];
+            positionPossible(namePA);
+        }
+    })
+    C5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C5');
+            namePA=tabJeuNow[4][2];
+            positionPossible(namePA);
+        }
+    })
+    C6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C6');
+            namePA=tabJeuNow[5][2];
+            positionPossible(namePA);
+        }
+    })
+    C7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C7');
+            namePA=tabJeuNow[6][2];
+            positionPossible(namePA);
+        }
+    })
+    C8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('C8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('C8');
+            namePA=tabJeuNow[7][2];
+            positionPossible(namePA);
+        }
+    })
+
+    D1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D1');
+            namePA=tabJeuNow[0][3];
+            positionPossible(namePA);
+        }
+    })
+    D2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D2');
+            namePA=tabJeuNow[1][3];
+            positionPossible(namePA);
+        }
+    })
+    D3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D3');
+            namePA=tabJeuNow[2][3];
+            positionPossible(namePA);
+        }
+    })
+    D4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D4');
+            namePA=tabJeuNow[3][3];
+            positionPossible(namePA);
+        }
+    })
+    D5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D5');
+            namePA=tabJeuNow[4][3];
+            positionPossible(namePA);
+        }
+    })
+    D6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D6');
+            namePA=tabJeuNow[5][3];
+            positionPossible(namePA);
+        }
+    })
+    D7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D7');
+            namePA=tabJeuNow[6][3];
+            positionPossible(namePA);
+        }
+    })
+    D8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('D8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('D8');
+            namePA=tabJeuNow[7][3];
+            positionPossible(namePA);
+        }
+    })
+
+    E1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E1');
+            namePA=tabJeuNow[0][4];
+            positionPossible(namePA);
+        }
+    })
+    E2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E2');
+            namePA=tabJeuNow[1][4];
+            positionPossible(namePA);
+        }
+    })
+    E3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E3');
+            namePA=tabJeuNow[2][4];
+            positionPossible(namePA);
+        }
+    })
+    E4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E4');
+            namePA=tabJeuNow[3][4];
+            positionPossible(namePA);
+        }
+    })
+    E5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E5');
+            namePA=tabJeuNow[4][4];
+            positionPossible(namePA);
+        }
+    })
+    E6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E6');
+            namePA=tabJeuNow[5][4];
+            positionPossible(namePA);
+        }
+    })
+    E7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E7');
+            namePA=tabJeuNow[6][4];
+            positionPossible(namePA);
+        }
+    })
+    E8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('E8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('E8');
+            namePA=tabJeuNow[7][4];
+            positionPossible(namePA);
+        }
+    })
+
+    F1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F1');
+            namePA=tabJeuNow[0][5];
+            positionPossible(namePA);
+        }
+    })
+    F2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F2');
+            namePA=tabJeuNow[1][5];
+            positionPossible(namePA);
+        }
+    })
+    F3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F3');
+            namePA=tabJeuNow[2][5];
+            positionPossible(namePA);
+        }
+    })
+    F4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F4');
+            namePA=tabJeuNow[3][5];
+            positionPossible(namePA);
+        }
+    })
+    F5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F5');
+            namePA=tabJeuNow[4][5];
+            positionPossible(namePA);
+        }
+    })
+    F6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F6');
+            namePA=tabJeuNow[5][5];
+            positionPossible(namePA);
+        }
+    })
+    F7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F7');
+            namePA=tabJeuNow[6][5];
+            positionPossible(namePA);
+        }
+    })
+    F8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('F8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('F8');
+            namePA=tabJeuNow[7][5];
+            positionPossible(namePA);
+        }
+    })
+
+    G1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G1');
+            namePA=tabJeuNow[0][6];
+            positionPossible(namePA);
+        }
+    })
+    G2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G2');
+            namePA=tabJeuNow[1][6];
+            positionPossible(namePA);
+        }
+    })
+    G3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G3');
+            namePA=tabJeuNow[2][6];
+            positionPossible(namePA);
+        }
+    })
+    G4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G4');
+            namePA=tabJeuNow[3][6];
+            positionPossible(namePA);
+        }
+    })
+    G5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G5');
+            namePA=tabJeuNow[4][6];
+            positionPossible(namePA);
+        }
+    })
+    G6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G6');
+            namePA=tabJeuNow[5][6];
+            positionPossible(namePA);
+        }
+    })
+    G7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G7');
+            namePA=tabJeuNow[6][6];
+            positionPossible(namePA);
+        }
+    })
+    G8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('G8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('G8');
+            namePA=tabJeuNow[7][6];
+            positionPossible(namePA);
+        }
+    })
+
+    H1.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H1');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H1');
+            namePA=tabJeuNow[0][7];
+            positionPossible(namePA);
+        }
+    })
+    H2.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H2');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H2');
+            namePA=tabJeuNow[1][7];
+            positionPossible(namePA);
+        }
+    })
+    H3.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H3');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H3');
+            namePA=tabJeuNow[2][7];
+            positionPossible(namePA);
+        }
+    })
+    H4.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H4');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H4');
+            namePA=tabJeuNow[3][7];
+            positionPossible(namePA);
+        }
+    })
+    H5.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H5');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H5');
+            namePA=tabJeuNow[4][7];
+            positionPossible(namePA);
+        }
+    })
+    H6.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H6');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H6');
+            namePA=tabJeuNow[5][7];
+            positionPossible(namePA);
+        }
+    })
+    H7.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H7');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H7');
+            namePA=tabJeuNow[6][7];
+            positionPossible(namePA);
+        }
+    })
+    H8.addEventListener('click',()=>{
+        if (zone){
+            clicks.push('H8');
+            moveP();
+            moves=[];
+            zone=0;
+        }else{
+            zone = 1;
+            clicks.push('H8');
+            namePA=tabJeuNow[7][7];
+            positionPossible(namePA);
+        }
+    })
+
+    function colorCases(){
+        for (let i=0;i< moves.length;i++){
+            if (moves[i]){
+                document.getElementById(moves[i]).classList.add('green');
+            }
+        }
+    }
+
+    function colorCaseActive(name){
+        document.getElementById(name).classList.add('active');
+    }
+
+    function rColorCaseActive(name){
+        document.getElementById(name).classList.remove('active');
+    }
+
+    function removeColorCases(){
+        for (let i=0;i< moves.length;i++){
+            if (moves[i]){
+                document.getElementById(moves[i]).classList.remove('green');
+            }
+        }
+    }
+
+
+    function pawnMove0(type){
+        let position = type.position;
+        if (position){
+            if (type.type[0]=="white"){
+                if (position[0]==1){
+                    if (position[1]==0){
+                        moves.push(positionNames[position[0]+1][position[1]+1])
+                    }else if(position[1]==7) {
+                        moves.push(positionNames[position[0] + 1][position[1]-1])
+                    }else{
+                        moves.push(positionNames[position[0] + 1][position[1]-1])
+                        moves.push(positionNames[position[0]+1][position[1]+1])
+                    }
+                }else{
+                    if (position[1]==0){
+                        moves.push(positionNames[position[0]+1][position[1]+1])
+                    }else if(position[1]==7) {
+                        moves.push(positionNames[position[0] + 1][position[1]-1])
+                    }else{
+                        moves.push(positionNames[position[0] + 1][position[1]-1])
+                        moves.push(positionNames[position[0]+1][position[1]+1])
+                    }
+                }
+            }else {
+                if (position[0]==6){
+                    if (position[1]==0){
+                        moves.push(positionNames[position[0]-1][position[1]+1])
+                    }else if(position[1]==7) {
+                        moves.push(positionNames[position[0] - 1][position[1]-1])
+                    }else{
+                        moves.push(positionNames[position[0] - 1][position[1]-1])
+                        moves.push(positionNames[position[0]-1][position[1]+1])
+                    }
+                }else{
+                    if (position[1]==0){
+                        moves.push(positionNames[position[0]-1][position[1]+1])
+                    }else if(position[1]==7) {
+                        moves.push(positionNames[position[0] - 1][position[1]])
+                        moves.push(positionNames[position[0] - 1][position[1]-1])
+                    }else{
+                        moves.push(positionNames[position[0] - 1][position[1]-1])
+                        moves.push(positionNames[position[0]-1][position[1]+1])
+                    }
+                }
+            }
+        }
+
+    }
+
+    function rookMove0(type){
+        let position = type.position;
+        let tab;
+        if (position){
+            if (type.type[0]=="white") {
+                tab = blackPositionNow;
+            }else{
+                tab = whitePositionNow;
+            }
+            let i=position[0];
+            let j=position[1];
+            while ((--i)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+        }
+
+
+    }
+
+    function knightMove0(type){
+        let position = type.position;
+        if (position){
+            let tab;
+            if (type.type[0]=="white") {
+                tab = blackPositionNow;
+            }else{
+                tab = whitePositionNow;
+            }
+            let i=position[0];
+            let j=position[1];
+            let position1,position2,position3,position4,position5,position6,position7,position8;
+            position1=[i-2,j-1];position2=[i-2,j+1];position3=[i-1,j-2];position4=[i-1,j+2];
+            position5=[i+2,j+1];position6=[i+2,j-1];position7=[i+1,j+2];position8=[i+1,j-2];
+            let positionsK=[];
+
+            if (i-2>=0 && j-1>=0){
+                positionsK.push(position1);
+            }
+            if (i-2>=0 && j+1<=7){
+                positionsK.push(position2);
+            }
+            if (i-1>=0 && j-2>=0){
+                positionsK.push(position3);
+            }
+            if (i-1>=0 && j+2<=7){
+                positionsK.push(position4);
+            }
+            if (i+2<=7 && j+1<=7){
+                positionsK.push(position5);
+            }
+            if (i+2<=7 && j-1>=0){
+                positionsK.push(position6);
+            }
+            if (i+1<=7 && j+2<=7){
+                positionsK.push(position7);
+            }
+            if (i+1<=7 && j-2>=0){
+                positionsK.push(position8);
+            }
+
+            for (let k=0;k < positionsK.length;k++){
+                if (!tabJeuNow[positionsK[k][0]][positionsK[k][1]] || (tabJeuNow[positionsK[k][0]][positionsK[k][1]] && isIn(positionNames[positionsK[k][0]][positionsK[k][1]], tab))){
+                    moves.push(positionNames[positionsK[k][0]][positionsK[k][1]]);
+                }
+            }
+        }
+
+    }
+
+    function bishopMove0(type){
+        let position = type.position;
+        if (position){
+            let tab;
+            if (type.type[0]=="white") {
+                tab = blackPositionNow;
+            }else{
+                tab = whitePositionNow;
+            }
+            let i=position[0];
+            let j=position[1];
+
+            while ((--i)>=0 && (--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7 && (++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((--i)>=0 && (++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7 && (--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+        }
+
+    }
+
+    function queenMove0(type){
+        bishopMove0(type);
+        rookMove0(type);
+    }
+
+    function kingMove0(type){
+        let position = type.position;
+        if (position){
+            let tab;
+            if (type.type[0]=="white") {
+                tab = blackPositionNow;
+            }else{
+                tab = whitePositionNow;
+            }
+            let i=position[0];
+            let j=position[1];
+
+            let position1,position2,position3,position4,position5,position6,position7,position8;
+            position1=[i,j-1];position2=[i,j+1];position3=[i-1,j];position4=[i+1,j];
+            position5=[i+1,j+1];position6=[i-1,j-1];position7=[i+1,j-1];position8=[i-1,j+1];
+            let positionsK=[];
+
+            if (j-1>=0){
+                positionsK.push(position1);
+            }
+            if (j+1<=7){
+                positionsK.push(position2);
+            }
+            if (i-1>=0 ){
+                positionsK.push(position3);
+            }
+            if (i+1<=7){
+                positionsK.push(position4);
+            }
+            if (i+1<=7 && j+1<=7){
+                positionsK.push(position5);
+            }
+            if (i-1>=0 && j-1>=0){
+                positionsK.push(position6);
+            }
+            if (i+1<=7 && j-1>=0){
+                positionsK.push(position7);
+            }
+            if (j+1<=7 && i-1>=0){
+                positionsK.push(position8);
+            }
+
+            for (let k=0;k < positionsK.length;k++){
+                if (!tabJeuNow[positionsK[k][0]][positionsK[k][1]] || (tabJeuNow[positionsK[k][0]][positionsK[k][1]] && isIn(positionNames[positionsK[k][0]][positionsK[k][1]], tab))){
+                    moves.push(positionNames[positionsK[k][0]][positionsK[k][1]]);
+                }
+            }
+        }
+
+    }
+
+    function DangerFounder(){
+
+        let wTableau=[{type:['white',whitePositionName[0][0]],position:positionNew(whitePositionNow[0][0])},{type:['white',whitePositionName[0][1]],position:positionNew(whitePositionNow[0][1])},{type:['white',whitePositionName[0][2]],position:positionNew(whitePositionNow[0][2])},{type:['white',whitePositionName[0][3]],position:positionNew(whitePositionNow[0][3])},{type:['white',whitePositionName[0][4]],position:positionNew(whitePositionNow[0][4])},{type:['white',whitePositionName[0][5]],position:positionNew(whitePositionNow[0][5])},{type:['white',whitePositionName[0][6]],position:positionNew(whitePositionNow[0][6])},{type:['white',whitePositionName[0][7]],position:positionNew(whitePositionNow[0][7])},{type:['white',whitePositionName[1][0]],position:positionNew(whitePositionNow[1][0])},{type:['white',whitePositionName[1][1]],position:positionNew(whitePositionNow[1][1])},{type:['white',whitePositionName[1][2]],position:positionNew(whitePositionNow[1][2])},{type:['white',whitePositionName[1][3]],position:positionNew(whitePositionNow[1][3])},{type:['white',whitePositionName[1][4]],position:positionNew(whitePositionNow[1][4])},{type:['white',whitePositionName[1][5]],position:positionNew(whitePositionNow[1][5])},{type:['white',whitePositionName[1][6]],position:positionNew(whitePositionNow[1][6])},{type:['white',whitePositionName[1][7]],position:positionNew(whitePositionNow[1][7])}];
+        let bTableau=[{type:['black',blackPositionName[0][0]],position:positionNew(blackPositionNow[0][0])},{type:['black',blackPositionName[0][1]],position:positionNew(blackPositionNow[0][1])},{type:['black',blackPositionName[0][2]],position:positionNew(blackPositionNow[0][2])},{type:['black',blackPositionName[0][3]],position:positionNew(blackPositionNow[0][3])},{type:['black',blackPositionName[0][4]],position:positionNew(blackPositionNow[0][4])},{type:['black',blackPositionName[0][5]],position:positionNew(blackPositionNow[0][5])},{type:['black',blackPositionName[0][6]],position:positionNew(blackPositionNow[0][6])},{type:['black',blackPositionName[0][7]],position:positionNew(blackPositionNow[0][7])},{type:['black',blackPositionName[1][0]],position:positionNew(blackPositionNow[1][0])},{type:['black',blackPositionName[1][1]],position:positionNew(blackPositionNow[1][1])},{type:['black',blackPositionName[1][2]],position:positionNew(blackPositionNow[1][2])},{type:['black',blackPositionName[1][3]],position:positionNew(blackPositionNow[1][3])},{type:['black',blackPositionName[1][4]],position:positionNew(blackPositionNow[1][4])},{type:['black',blackPositionName[1][5]],position:positionNew(blackPositionNow[1][5])},{type:['black',blackPositionName[1][6]],position:positionNew(blackPositionNow[1][6])},{type:['black',blackPositionName[1][7]],position:positionNew(blackPositionNow[1][7])}];
+
+
+        let resultat=[];
+        for (let i=0;i<wTableau.length;i++){
+            moves=[];
+            positionPossibleNew(wTableau[i]);
+            for (let j=0;j<moves.length;j++){
+                resultat.push(moves[j]);
+            }
+        }
+        whiteDanger=resultat;
+        resultat=[];
+        for (let i=0;i<bTableau.length;i++){
+            moves=[];
+            positionPossibleNew(bTableau[i]);
+            for (let j=0;j<moves.length;j++){
+                resultat.push(moves[j]);
+            }
+        }
+        blackDanger=resultat;
+
+    }
+
+
+    function positionNew(a){
+        for (let i=0; i < positionNames.length ;i++){
+            for (let j=0; j < positionNames.length ;j++){
+                if (a==positionNames[i][j]){
+                    return [i,j];
+                }
+            }
+        }
+    }
+
+    function positionPossibleNew(type){
+
+        if (type.type){
+            if (type.type[1]=="pawn"){
+                pawnMove0(type);
+            }else if (type.type[1]=="rook"){
+                rookMove0(type);
+            }else if (type.type[1]=="knight"){
+                knightMove0(type);
+            }else if (type.type[1]=="bishop"){
+                bishopMove0(type);
+            }else if (type.type[1]=="queen"){
+                queenMove0(type);
+            }else if (type.type[1]=="king"){
+                kingMove0(type);
+            }
+        }
+
+
+    }
+
+    function checkKingMove(){
+
+        let i=turn/2;
+
+        let drapeau=0;
+        if (turn%2){
+            for (let j=1;j<i;j+=2){
+                if (casesMoves[j][0]=="bKing"){
+                    drapeau=1;
+                }
+            }
+        }else{
+            for (let j=0;j<i;j+=2){
+                if (casesMoves[j][0]=="wKing"){
+                    drapeau=1;
+                }
+            }
+        }
+        if (drapeau){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+
+    function checkRightRookMove(){
+        let i=turn/2;
+        let drapeau=0;
+        if (turn%2){
+            for (let j=1;j<i;j+=2){
+                if (casesMoves[j][0]=="bRRook"){
+                    drapeau=1;
+                }
+            }
+        }else{
+            for (let j=0;j<i;j+=2){
+                if (casesMoves[j][0]=="wRRook"){
+                    drapeau=1;
+                }
+            }
+        }
+        if (drapeau){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+
+    function checkLeftRookMove(){
+        let i=turn/2;
+        let drapeau=0;
+        if (turn%2){
+            for (let j=1;j<i;j+=2){
+                if (casesMoves[j][0]=="bLRook"){
+                    drapeau=1;
+                }
+            }
+        }else{
+            for (let j=0;j<i;j+=2){
+                if (casesMoves[j][0]=="wLRook"){
+                    drapeau=1;
+                }
+            }
+        }
+        if (drapeau){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+
+    function functRook(){
+        if (turn%2){
+            let k=moves.pop();
+            if (k=="G8"){
+                document.getElementById("H8").innerHTML ="<p></p>";
+                blackPositionNow[0][7] = "F8";
+                moves=[];
+                isEchec("bRRook");
+                tabJeuNow[7][7]=null;
+                tabJeuNow[7][5]="bRRook";
+                document.getElementById("F8").innerHTML="<p id='bRRook'>"+piece[1].rook+"</p>";
+                document.getElementById("bRRook").classList.add('piece');
+            }else{
+                document.getElementById("A8").innerHTML ="<p></p>";
+                blackPositionNow[0][0] = "D8";
+                moves=[];
+                isEchec("bLRook");
+                tabJeuNow[7][0]=null;
+                tabJeuNow[7][3]="bLRook";
+                document.getElementById("D8").innerHTML="<p id='bLRook'>"+piece[1].rook+"</p>";
+                document.getElementById("bLRook").classList.add('piece');
+            }
+            DangerFounder();
+            callFunctBRook=0;
+        }else{
+            let k=moves.pop();
+            if (k=="G1"){
+                document.getElementById("H1").innerHTML ="<p></p>";
+                whitePositionNow[0][7] = "F1";
+                moves=[];
+                isEchec("wRRook");
+                tabJeuNow[0][7]=null;
+                tabJeuNow[0][5]="wRRook";
+                document.getElementById("F1").innerHTML="<p id='wRRook'>"+piece[0].rook+"</p>";
+                document.getElementById("wRRook").classList.add('piece');
+            }else{
+                document.getElementById("A1").innerHTML ="<p></p>";
+                whitePositionNow[0][0] = "D1";
+                moves=[];
+                isEchec("wLRook");
+                tabJeuNow[0][0]=null;
+                tabJeuNow[0][3]="wLRook";
+                document.getElementById("D1").innerHTML="<p id='wLRook'>"+piece[0].rook+"</p>";
+                document.getElementById("wLRook").classList.add('piece');
+            }
+            callFunctRRook=0;
+            DangerFounder();
+        }
+    }
+
+    function isIn(a,b){
+        let flag=0;
+        for (let i=0;i<b.length;i++){
+            for (let j=0;j<b[i].length;j++){
+                if (a == b[i][j]){
+                    flag=1;
+                }
+            }
+        }
+        if (flag){
+            return 1;
+        }else {
+            return 0;
+        }
+    }
+
+    function isIn1(a,b){
+        let flag=0;
+        for (let i=0;i<b.length;i++){
+            if (a == b[i]){
+                flag=1;
+            }
+        }
+        if (flag){
+            return 1;
+        }else {
+            return 0;
+        }
+    }
+
+    function pieceName(name){
+
+        for (let i=0;i< rookP.length;i++){
+            if (name == rookP[i]){
+                return "rook";
+            }
+        }
+        for (let i=0;i< knightP.length;i++){
+            if (name == knightP[i]){
+                return "knight";
+            }
+        }
+        for (let i=0;i< bishopP.length;i++){
+            if (name == bishopP[i]){
+                return "bishop";
+            }
+        }
+        for (let i=0;i< queenP.length;i++){
+            if (name == queenP[i]){
+                return "queen";
+            }
+        }
+        for (let i=0;i< kingP.length;i++){
+            if (name == kingP[i]){
+                return "king";
+            }
+        }
+        for (let i=0;i< pawnP.length;i++){
+            if (name == pawnP[i]){
+                return "pawn";
+            }
+        }
+    }
+
+    function typeP(name){
+
+        for (let  i=0; i < 4 ; i++){
+            for (let j=0; j < 8 ; j++){
+                if (name == namePieces[i][j]){
+                    let nomDeLaPiece = pieceName(name);
+                    if (i%4<2){
+                        infoPiece = [0,nomDeLaPiece,namePA];
+                        return [piece[0].type,nomDeLaPiece];
+                    }else {
+                        infoPiece = [1,nomDeLaPiece,namePA];
+                        return [piece[1].type,nomDeLaPiece];
+                    }
+                }
+            }
+        }
+                let nomDeLaPiece = pieceName(name);
+                if (turn%2){
+                    infoPiece = [1,nomDeLaPiece,namePA];
+                    return [piece[1].type,nomDeLaPiece];
+                }else{
+                    infoPiece = [0,nomDeLaPiece,namePA];
+                    return [piece[0].type,nomDeLaPiece];
+                }
+
+    }
+
+    function determinerPosition(info){
+        if (info[0]==0){
+            for (let i=0;i<2;i++){
+                for (let j=0;j<8;j++){
+                    if (infoPiece[2]==namePieces[i][j]){
+                        return [i,j]
+                    }
+                }
+            }
+            for (let i=0;i<8;i++){
+                for (let j=0;j<8;j++){
+                    if (infoPiece[2]==tabJeuNow[i][j]){
+                        for (let k=0;k<2;k++){
+                            for (let l=0;l<8;l++){
+                                if (positionNames[i][j]==whitePositionNow[k][l]){
+                                    return [k,l]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            for (let i=2;i<4;i++){
+                for (let j=0;j<8;j++){
+                    if (infoPiece[2]==namePieces[i][j]){
+                        if (i%2){
+                            return  [0,j];
+                        }else {
+                            return  [1,j];
+                        }
+
+                    }
+                }
+            }
+            for (let i=0;i<2;i++){
+                for (let j=0;j<8;j++){
+                    if (infoPiece[2]==tabJeuNow[i][j]){
+                        for (let k=0;k<2;k++){
+                            for (let l=0;l<8;l++){
+                                if (positionNames[i][j]==blackPositionNow[k][l]){
+                                    return [k,l]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function determinerPositionTable(info,objet){
+        let tab;
+        if (info[0]==0){
+            tab=blackPositionNow;
+        }else{
+            tab=whitePositionNow;
+        }
+        for (let i=0;i<2;i++){
+            for (let j=0;j<8;j++){
+                if (objet==tab[i][j]){
+                    return [i,j]
+                }
+            }
+        }
+    }
+
+    function positionP(){
+        let clicksLength = clicks.length;
+        let positionDepart;
+        if (echec && pass){
+            positionDepart = casesMoves[casesMoves.length -1][1];
+        }else{
+            positionDepart = clicks[clicksLength-1];
+            colorCaseActive(positionDepart);
+        }
+        for (let i=0; i < positionNames.length ;i++){
+            for (let j=0; j < positionNames.length ;j++){
+                if (positionDepart==positionNames[i][j]){
+                    coordonnees =[i,j];
+                    return [i,j];
+                }
+            }
+        }
+    }
+
+    function positionPA(){
+        let clicksLength = clicks.length;
+        let positionDepart;
+        if (echec && pass){
+            positionDepart = casesMoves[casesMoves.length -1][1];
+        }else{
+            positionDepart = clicks[clicksLength-1];
+        }
+        for (let i=0; i < positionNames.length ;i++){
+            for (let j=0; j < positionNames.length ;j++){
+                if (positionDepart==positionNames[i][j]){
+                    return [i,j];
+                }
+            }
+        }
+    }
+
+    function infoP(name){
+
+        let typePiece=typeP(name);
+        return {type:typePiece,position:positionP()}
+    }
+
+    function positionPossible(name){
+
+        let type=infoP(name);
+        if (type.type[1]=="pawn"){
+            pawnMove(type);
+        }else if (type.type[1]=="rook"){
+            rookMove(type);
+        }else if (type.type[1]=="knight"){
+            knightMove(type);
+        }else if (type.type[1]=="bishop"){
+            bishopMove(type);
+        }else if (type.type[1]=="queen"){
+            queenMove(type);
+        }else if (type.type[1]=="king"){
+            kingMove(type);
+        }
+
+    }
+
+    function pawnMove(type){
+        let position = type.position;
+        drapeauP=1;
+        if (type.type[0]=="white"){
+            if ((!(turn%2)) || ((turn%2) && echec)){
+                if (position[0]==1){
+                    if (position[1]==0){
+                        if (!tabJeuNow[position[0]+1][position[1]] ){
+                            moves.push(positionNames[position[0]+1][position[1]])
+                            if (!tabJeuNow[position[0]+2][position[1]] ){
+                                moves.push(positionNames[position[0]+2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                            moves.push(positionNames[position[0]+1][position[1]+1])
+                        }
+
+                        if (!tabJeuNow[position[0]+1][position[1]] ){
+                            if (!tabJeuNow[position[0]+2][position[1]] ){
+                                if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }else if(position[1]==7) {
+                        if (!tabJeuNow[position[0] + 1][position[1]]) {
+                            moves.push(positionNames[position[0] + 1][position[1]])
+                            if (!tabJeuNow[position[0] + 2][position[1]]) {
+                                moves.push(positionNames[position[0] + 2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0] + 1][position[1] - 1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)) {
+                            moves.push(positionNames[position[0] + 1][position[1]-1])
+                        }
+                        if (!tabJeuNow[position[0]+1][position[1]] ){
+                            if (!tabJeuNow[position[0]+2][position[1]] ){
+                                if (tabJeuNow[position[0]+1][position[1]-1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }else{
+                        if (!tabJeuNow[position[0] + 1][position[1]]) {
+                            moves.push(positionNames[position[0] + 1][position[1]])
+                            if (!tabJeuNow[position[0] + 2][position[1]]) {
+                                moves.push(positionNames[position[0] + 2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0] + 1][position[1] - 1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)) {
+                            moves.push(positionNames[position[0] + 1][position[1]-1])
+                        }
+                        if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                            moves.push(positionNames[position[0]+1][position[1]+1])
+                        }
+                        if (!tabJeuNow[position[0]+1][position[1]] ){
+                            if (!tabJeuNow[position[0]+2][position[1]] ){
+                                if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                                if (tabJeuNow[position[0]+1][position[1]-1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    if (position[1]==0){
+                        if (!tabJeuNow[position[0]+1][position[1]] ){
+                            moves.push(positionNames[position[0]+1][position[1]])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                            moves.push(positionNames[position[0]+1][position[1]+1])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]+1]);
+                            }
+                        }
+
+                    }else if(position[1]==7) {
+                        if (!tabJeuNow[position[0] + 1][position[1]]) {
+                            moves.push(positionNames[position[0] + 1][position[1]])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0] + 1][position[1] - 1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)) {
+                            moves.push(positionNames[position[0] + 1][position[1]-1])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]-1]);
+                            }
+                        }
+                    }else{
+                        if (!tabJeuNow[position[0] + 1][position[1]]) {
+                            moves.push(positionNames[position[0] + 1][position[1]])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0] + 1][position[1] - 1] && isIn(positionNames[position[0]+1][position[1]-1],blackPositionNow)) {
+                            moves.push(positionNames[position[0] + 1][position[1]-1])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]-1]);
+                            }
+                        }
+                        if (tabJeuNow[position[0]+1][position[1]+1] && isIn(positionNames[position[0]+1][position[1]+1],blackPositionNow)){
+                            moves.push(positionNames[position[0]+1][position[1]+1])
+                            if ((position[0]+1)==7){
+                                pawnToQueen.push(positionNames[position[0]+1][position[1]+1]);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }else {
+            if ((turn%2) || (!(turn%2) && echec)){
+                if (position[0]==6){
+                    if (position[1]==0){
+                        if (!tabJeuNow[position[0]-1][position[1]] ){
+                            moves.push(positionNames[position[0]-1][position[1]])
+                            if (!tabJeuNow[position[0]-2][position[1]] ){
+                                moves.push(positionNames[position[0]-2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                            moves.push(positionNames[position[0]-1][position[1]+1])
+                        }
+                        if (!tabJeuNow[position[0]-1][position[1]] ){
+                            if (!tabJeuNow[position[0]-2][position[1]] ){
+                                if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }else if(position[1]==7) {
+                        if (!tabJeuNow[position[0] - 1][position[1]]) {
+                            moves.push(positionNames[position[0] - 1][position[1]])
+                            if (!tabJeuNow[position[0] - 2][position[1]]) {
+                                moves.push(positionNames[position[0] - 2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0] - 1][position[1] - 1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)) {
+                            moves.push(positionNames[position[0] - 1][position[1]-1])
+                        }
+                        if (!tabJeuNow[position[0]-1][position[1]] ){
+                            if (!tabJeuNow[position[0]-2][position[1]] ){
+                                if (tabJeuNow[position[0]-1][position[1]-1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }else{
+                        if (!tabJeuNow[position[0] - 1][position[1]]) {
+                            moves.push(positionNames[position[0] - 1][position[1]])
+                            if (!tabJeuNow[position[0] - 2][position[1]]) {
+                                moves.push(positionNames[position[0] - 2][position[1]])
+                            }
+                        }
+
+                        if (tabJeuNow[position[0] - 1][position[1] - 1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)) {
+                            moves.push(positionNames[position[0] - 1][position[1]-1])
+                        }
+                        if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                            moves.push(positionNames[position[0]-1][position[1]+1])
+                        }
+                        if (!tabJeuNow[position[0]-1][position[1]] ){
+                            if (!tabJeuNow[position[0]-2][position[1]] ){
+                                if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                                if (tabJeuNow[position[0]-1][position[1]-1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)){
+                                    flagpawn=positionNames[position[0]][position[1]];
+                                    drapeauP=0;
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    if (position[1]==0){
+                        if (!tabJeuNow[position[0]-1][position[1]] ){
+                            moves.push(positionNames[position[0]-1][position[1]])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                            moves.push(positionNames[position[0]-1][position[1]+1])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]+1]);
+                            }
+                        }
+
+                    }else if(position[1]==7) {
+                        if (!tabJeuNow[position[0] - 1][position[1]]) {
+                            moves.push(positionNames[position[0] - 1][position[1]])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0] - 1][position[1] - 1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)) {
+                            moves.push(positionNames[position[0] - 1][position[1]-1])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]-1]);
+                            }
+                        }
+                    }else{
+                        if (!tabJeuNow[position[0] - 1][position[1]]) {
+                            moves.push(positionNames[position[0] - 1][position[1]])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]]);
+                            }
+                        }
+                        if (tabJeuNow[position[0] - 1][position[1] - 1] && isIn(positionNames[position[0]-1][position[1]-1],whitePositionNow)) {
+                            moves.push(positionNames[position[0] - 1][position[1]-1])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]-1]);
+                            }
+                        }
+                        if (tabJeuNow[position[0]-1][position[1]+1] && isIn(positionNames[position[0]-1][position[1]+1],whitePositionNow)){
+                            moves.push(positionNames[position[0]-1][position[1]+1])
+                            if ((position[0]-1)==0){
+                                pawnToQueen.push(positionNames[position[0]-1][position[1]+1]);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        if (flagpawn && drapeauP){
+            moves.push(flagpawn);
+        }
+        if (!echec){
+            colorCases();
+        }
+    }
+
+    function rookMove(type){
+        let position = type.position;
+        let tab;
+        if (type.type[0]=="white") {
+            tab = blackPositionNow;
+        }else{
+            tab = whitePositionNow;
+        }
+        let i=position[0];
+        let j=position[1];
+
+        if (((!(turn%2) && tab==blackPositionNow) || (turn%2 && tab==whitePositionNow) ) || ((((turn%2) && tab==blackPositionNow) || (!turn%2 && tab==whitePositionNow)) && echec)){
+            while ((--i)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+        }
+        if (!echec){
+            colorCases();
+        }
+    }
+
+    function knightMove(type){
+        let position = type.position;
+        let tab;
+        if (type.type[0]=="white") {
+            tab = blackPositionNow;
+        }else{
+            tab = whitePositionNow;
+        }
+        let i=position[0];
+        let j=position[1];
+        let position1,position2,position3,position4,position5,position6,position7,position8;
+        position1=[i-2,j-1];position2=[i-2,j+1];position3=[i-1,j-2];position4=[i-1,j+2];
+        position5=[i+2,j+1];position6=[i+2,j-1];position7=[i+1,j+2];position8=[i+1,j-2];
+        let positionsK=[];
+
+        if (((!(turn%2) && tab==blackPositionNow) || (turn%2 && tab==whitePositionNow) ) || ((((turn%2) && tab==blackPositionNow) || (!turn%2 && tab==whitePositionNow)) && echec)){
+            if (i-2>=0 && j-1>=0){
+                positionsK.push(position1);
+            }
+            if (i-2>=0 && j+1<=7){
+                positionsK.push(position2);
+            }
+            if (i-1>=0 && j-2>=0){
+                positionsK.push(position3);
+            }
+            if (i-1>=0 && j+2<=7){
+                positionsK.push(position4);
+            }
+            if (i+2<=7 && j+1<=7){
+                positionsK.push(position5);
+            }
+            if (i+2<=7 && j-1>=0){
+                positionsK.push(position6);
+            }
+            if (i+1<=7 && j+2<=7){
+                positionsK.push(position7);
+            }
+            if (i+1<=7 && j-2>=0){
+                positionsK.push(position8);
+            }
+
+            for (let k=0;k < positionsK.length;k++){
+                if (!tabJeuNow[positionsK[k][0]][positionsK[k][1]] || (tabJeuNow[positionsK[k][0]][positionsK[k][1]] && isIn(positionNames[positionsK[k][0]][positionsK[k][1]], tab))){
+                    moves.push(positionNames[positionsK[k][0]][positionsK[k][1]]);
+                }
+            }
+        }
+        if (!echec){
+            colorCases();
+        }
+    }
+
+    function bishopMove(type){
+
+        let position = type.position;
+        let tab;
+
+        if (type.type[0]=="white") {
+            tab = blackPositionNow;
+        }else{
+            tab = whitePositionNow;
+        }
+        let i=position[0];
+        let j=position[1];
+
+        if (((!(turn%2) && tab==blackPositionNow) || (turn%2 && tab==whitePositionNow) ) || ((((turn%2) && tab==blackPositionNow) || (!turn%2 && tab==whitePositionNow)) && echec)){
+            while ((--i)>=0 && (--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7 && (++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((--i)>=0 && (++j)<=7){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+            i = position[0];
+            j = position[1];
+
+            while ((++i)<=7 && (--j)>=0){
+                if ((!tabJeuNow[i][j] || (tabJeuNow[i][j] && isIn(positionNames[i][j], tab)))){
+                    if (isIn(positionNames[i][j], tab)) {
+                        moves.push(positionNames[i][j]);
+                        break;
+                    }
+                    moves.push(positionNames[i][j]);
+                }else {
+                    break;
+                }
+            }
+        }
+        if (!echec){
+            colorCases();
+        }
+    }
+
+    function queenMove(type){
+        bishopMove(type);
+        rookMove(type);
+    }
+
+    function kingMove(type){
+        let position = type.position;
+        let tab;
+
+        if (type.type[0]=="white") {
+            tab = blackPositionNow;
+        }else{
+            tab = whitePositionNow;
+        }
+        let i=position[0];
+        let j=position[1];
+
+        if (((!(turn%2) && tab==blackPositionNow) || (turn%2 && tab==whitePositionNow) ) || ((((turn%2) && tab==blackPositionNow) || (!turn%2 && tab==whitePositionNow)) && echec)){
+            let position1,position2,position3,position4,position5,position6,position7,position8;
+            position1=[i,j-1];position2=[i,j+1];position3=[i-1,j];position4=[i+1,j];
+            position5=[i+1,j+1];position6=[i-1,j-1];position7=[i+1,j-1];position8=[i-1,j+1];
+            let positionsK=[];
+
+            if (j-1>=0){
+                positionsK.push(position1);
+            }
+            if (j+1<=7){
+                positionsK.push(position2);
+            }
+            if (i-1>=0 ){
+                positionsK.push(position3);
+            }
+            if (i+1<=7){
+                positionsK.push(position4);
+            }
+            if (i+1<=7 && j+1<=7){
+                positionsK.push(position5);
+            }
+            if (i-1>=0 && j-1>=0){
+                positionsK.push(position6);
+            }
+            if (i+1<=7 && j-1>=0){
+                positionsK.push(position7);
+            }
+            if (j+1<=7 && i-1>=0){
+                positionsK.push(position8);
+            }
+
+            for (let k=0;k < positionsK.length;k++){
+                if (!tabJeuNow[positionsK[k][0]][positionsK[k][1]] || (tabJeuNow[positionsK[k][0]][positionsK[k][1]] && isIn(positionNames[positionsK[k][0]][positionsK[k][1]], tab))){
+                    moves.push(positionNames[positionsK[k][0]][positionsK[k][1]]);
+                }
+            }
+        }
+
+        for (let i=0;i<moves.length ;i++){
+            if (turn%2){
+                if (isIn1(moves[i],whiteDanger)){
+                    moves[i]=null;
+                }
+            }else{
+                if (isIn1(moves[i],blackDanger)){
+                    moves[i]=null;
+                }
+            }
+        }
+
+        if (whiteMiniRook || blackMiniRook){
+            if (checkKingMove() && checkRightRookMove()){
+                if (turn%2 && blackMiniRook){
+                    if (!tabJeuNow[7][5] && !tabJeuNow[7][6]){
+                        if (!isIn1("F8",whiteDanger) && !isIn1("G8",whiteDanger) && !isIn1("E8",whiteDanger)){
+                            passBMiniRook=1;
+                        }
+                    }
+
+                }else if(!(turn%2) && whiteMiniRook){
+                    if (!tabJeuNow[0][5] && !tabJeuNow[0][6]){
+                        if (!isIn1("F1",blackDanger) && !isIn1("G1",blackDanger) && !isIn1("E1",blackDanger)){
+                            passWMiniRook=1;
+                        }
+                    }
+                }
+            }else{
+                if (turn%2){
+                    blackMiniRook=0;
+                }else{
+                    whiteMiniRook=0;
+                }
+            }
+        }
+
+        if (whiteRook || blackRook){
+            if (checkKingMove() && checkLeftRookMove()){
+                if (turn%2 && blackRook){
+                    if (!tabJeuNow[7][3] && !tabJeuNow[7][2] && !tabJeuNow[7][1]){
+                        if (!isIn1("D8",whiteDanger) && !isIn1("C8",whiteDanger) && !isIn1("E8",whiteDanger) ){
+                            passBRook=1;
+                        }
+                    }
+
+                }else if(!(turn%2) && whiteRook){
+                    if (!tabJeuNow[0][3] && !tabJeuNow[0][2] && !tabJeuNow[0][1]){
+                        if (!isIn1("D1",blackDanger) && !isIn1("C1",blackDanger) && !isIn1("E1",blackDanger) ){
+                            passWRook=1;
+                        }
+                    }
+                }
+            }else{
+                if (turn%2){
+                    blackRook=0;
+                }else{
+                    whiteRook=0;
+                }
+            }
+        }
+        if (!echec){
+            colorCases();
+        }
+    }
+
+    function isEchec(){
+        DangerFounder();
+        if (!(turn%2)){
+            if (isIn1(blackPositionNow[0][4],whiteDanger)) {
+                echec = 1;
+                document.getElementById(blackPositionNow[0][4]).classList.add("echec");
+                kingPositionEchec=blackPositionNow[0][4];
+            }
+        }else{
+            if (isIn1(whitePositionNow[0][4],blackDanger)){
+                echec=1;
+                document.getElementById(whitePositionNow[0][4]).classList.add("echec");
+                kingPositionEchec=whitePositionNow[0][4];
+            }
+        }
+    }
+
+    function isEchec2(){
+        DangerFounder();
+        if (turn%2){
+            if (!isIn1(blackPositionNow[0][4],whiteDanger)){
+                echec=0;
+                document.getElementById(kingPositionEchec).classList.remove("echec");
+            }
+        }else{
+            if (!isIn1(whitePositionNow[0][4],blackDanger)){
+                echec=0;
+                document.getElementById(kingPositionEchec).classList.remove("echec");
+            }
+        }
+
+        pass=0;
+    }
+
+    function clouageAttack(a,b){
+        let data;
+        let save;
+        if (turn%2){
+            for (let i=0;i<whitePositionNow.length;i++){
+                for (let j=0;j<whitePositionNow[i].length;j++){
+                    if (a==whitePositionNow[i][j]){
+                        whitePositionNow[i][j]=null;
+                        data=blackPositionNow[b[0]][b[1]];
+                        blackPositionNow[b[0]][b[1]]=a;
+                        save=tabJeuNow[coordonnees[0]][coordonnees[1]];
+                        tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                        DangerFounder();
+                        tabJeuNow[coordonnees[0]][coordonnees[1]]=save;
+                        whitePositionNow[i][j]=a;
+                        blackPositionNow[b[0]][b[1]]=data;
+                        if (isIn1(blackPositionNow[0][4],whiteDanger)){
+                            return 1;
+                        }else{
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }else{
+            for (let i=0;i<blackPositionNow.length;i++){
+                for (let j=0;j<blackPositionNow[i].length;j++){
+                    if (a==blackPositionNow[i][j]){
+                        blackPositionNow[i][j]=null;
+                        data=whitePositionNow[b[0]][b[1]];
+                        whitePositionNow[b[0]][b[1]]=a;
+                        save=tabJeuNow[coordonnees[0]][coordonnees[1]];
+                        tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                        DangerFounder();
+                        tabJeuNow[coordonnees[0]][coordonnees[1]]=save;
+                        blackPositionNow[i][j]=a;
+                        whitePositionNow[b[0]][b[1]]=data;
+                        if (isIn1(whitePositionNow[0][4],blackDanger)){
+                            return 1;
+                        }else{
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function clouageDefance(a,b){
+        let data;
+        let drapeau=0;
+        let save;
+        if (turn%2){
+            for (let i=0;i<whitePositionNow.length;i++){
+                for (let j=0;j<whitePositionNow[i].length;j++){
+                    if (a==whitePositionNow[i][j]){
+                        drapeau=1;
+                    }
+                }
+            }
+            if (drapeau){
+                if (clouageAttack(a,b)){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }else{
+
+                data=blackPositionNow[b[0]][b[1]];
+                blackPositionNow[b[0]][b[1]]=a;
+                save=tabJeuNow[coordonnees[0]][coordonnees[1]];
+                tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                DangerFounder();
+                tabJeuNow[coordonnees[0]][coordonnees[1]]=save;
+                blackPositionNow[b[0]][b[1]]=data;
+                if (isIn1(blackPositionNow[0][4],whiteDanger)){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }
+        }else{
+            for (let i=0;i<blackPositionNow.length;i++){
+                for (let j=0;j<blackPositionNow[i].length;j++){
+                    if (a==blackPositionNow[i][j]){
+                        drapeau=1;
+                    }
+                }
+            }
+            if (drapeau){
+                if (clouageAttack(a,b)){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }else{
+                data=whitePositionNow[b[0]][b[1]];
+                whitePositionNow[b[0]][b[1]]=a;
+                save=tabJeuNow[coordonnees[0]][coordonnees[1]];
+                tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                DangerFounder();
+                tabJeuNow[coordonnees[0]][coordonnees[1]]=save;
+                whitePositionNow[b[0]][b[1]]=data;
+                if (isIn1(whitePositionNow[0][4],blackDanger)){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }
+        }
+    }
+
+    function moveP(){
+        removeColorCases();
+        let clicksLength = clicks.length;
+        rColorCaseActive(clicks[clicksLength-2]);
+        let positionArrivee = clicks[clicksLength-1];
+        if (passWMiniRook || passBMiniRook || passBRook || passWRook){
+            if (turn%2){
+                if (passBRook){
+                    if (positionArrivee=="C8"){
+                        passBRook=0;
+                        passBMiniRook=0;
+                        blackRook=0;
+                        blackMiniRook=0;
+                        moves.push("C8");
+                        callFunctBRook=1;
+                    }
+                }
+                if (passBMiniRook){
+                    if (positionArrivee=="G8"){
+                        passBRook=0;
+                        passBMiniRook=0;
+                        blackRook=0;
+                        blackMiniRook=0;
+                        moves.push("G8");
+                        callFunctBRook=1;
+                    }
+                }
+            }else{
+                if (passWRook){
+                    if (positionArrivee=="C1"){
+                        passWRook=0;
+                        passWMiniRook=0;
+                        whiteRook=0;
+                        whiteMiniRook=0;
+                        moves.push("C1");
+                        callFunctRRook=1;
+                    }
+                }
+                if (passWMiniRook){
+                    if (positionArrivee=="G1"){
+                        passWRook=0;
+                        passWMiniRook=0;
+                        whiteRook=0;
+                        whiteMiniRook=0;
+                        moves.push("G1");
+                        callFunctRRook=1;
+                    }
+                }
+            }
+        }
+
+        for (let i=0; i < moves.length; i++){
+            if (positionArrivee == moves[i]){
+                let save=moves;
+                let me=determinerPosition(infoPiece);
+
+                let coordonneesArrivee = positionPA();
+                if (!echec){
+                    if (infoPiece[1]=="pawn") {
+                        if ((isIn1(positionArrivee, pawnToQueen))) {
+                            if (turn % 2) {
+                                blackPositionName[me[0]][me[1]] = "queen";
+                            } else {
+                                whitePositionName[me[0]][me[1]] = "queen";
+                            }
+                        }
+                    }
+
+                    if (!clouageAttack(positionArrivee,me) && !clouageDefance(positionArrivee,me)){
+
+                        moves=save;
+                        document.getElementById(clicks[clicksLength - 2]).innerHTML ="<p></p>";
+                        let me2;
+                        tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+
+                        tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=namePA;
+                        if (flagpawn && drapeauP){
+                            if (isIn1(flagpawn,moves)){
+                                if (turn%2){
+                                    tabJeuNow[coordonneesArrivee[0]+2][coordonneesArrivee[1]]=null;
+                                    whitePositionNow[1][coordonneesArrivee[1]] = null;
+                                }else{
+                                    tabJeuNow[coordonneesArrivee[0]-2][coordonneesArrivee[1]]=null;
+                                    blackPositionNow[1][coordonneesArrivee[1]] = null;
+                                }
+                                document.getElementById(casesMoves[casesMoves.length-1][1]).innerHTML ="<p></p>";
+                            }
+                            flagpawn=0;
+                        }
+                        if (infoPiece[1]=="rook"){
+                            document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[infoPiece[0]].rook+"</p>";
+                            document.getElementById(namePA).classList.add('piece');
+                            casesMoves.push([namePA,positionArrivee]);
+                        }
+                        if (infoPiece[1]=="knight"){
+                            document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[infoPiece[0]].knight+"</p>";
+                            document.getElementById(namePA).classList.add('piece');
+                            casesMoves.push([namePA,positionArrivee]);
+                        }
+                        if (infoPiece[1]=="bishop"){
+                            document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[infoPiece[0]].bishop+"</p>";
+                            document.getElementById(namePA).classList.add('piece');
+                            casesMoves.push([namePA,positionArrivee]);
+                        }
+                        if (infoPiece[1]=="queen"){
+                            document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[infoPiece[0]].queen+"</p>";
+                            document.getElementById(namePA).classList.add('piece');
+                            casesMoves.push([namePA,positionArrivee]);
+                        }
+                        if (infoPiece[1]=="king"){
+                            document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[infoPiece[0]].king+"</p>";
+                            document.getElementById(namePA).classList.add('piece');
+                            casesMoves.push([namePA,positionArrivee]);
+                        }
+
+                        if (infoPiece[1]=="pawn"){
+
+                            if (!(isIn1(positionArrivee,pawnToQueen))){
+                                document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[turn%2].pawn+"</p>";
+                                document.getElementById(namePA).classList.add('piece');
+                                casesMoves.push([namePA,positionArrivee]);
+                            }else{
+                                namePA=namePA+'Q';
+                                tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=namePA;
+                                document.getElementById(positionArrivee).innerHTML="<p id="+namePA+">"+piece[turn%2].queen+"</p>";
+                                document.getElementById(namePA).classList.add('piece');
+                                casesMoves.push([namePA,positionArrivee]);
+
+                            }
+                            pawnToQueen=[];
+
+                        }
+
+
+
+                        if (!(turn%2)){
+                            if (isIn(positionArrivee,blackPositionNow)){
+                                me2=determinerPositionTable(infoPiece,positionArrivee);
+                                blackPositionNow[me2[0]][me2[1]] = null;
+                            }
+                            whitePositionNow[me[0]][me[1]] = positionArrivee;
+
+                            moves=[];
+                            isEchec();
+                        }else{
+                            if (isIn(positionArrivee,whitePositionNow)){
+                                me2=determinerPositionTable(infoPiece,positionArrivee);
+                                whitePositionNow[me2[0]][me2[1]] = null;
+                            }
+                            blackPositionNow[me[0]][me[1]] = positionArrivee;
+                            moves=[];
+                            isEchec();
+                        }
+                        moves=save;
+                        if (callFunctRRook || callFunctBRook){
+                            functRook();
+                            moves=[];
+                            isEchec();
+                        }
+                        turn++;
+                    }
+
+                }else {
+
+                    if ((positionArrivee==casesMoves[casesMoves.length -1][1]) && (!clouageAttack(positionArrivee,me) && !clouageDefance(positionArrivee,me))){
+                        echec=0;
+                        document.getElementById(kingPositionEchec).classList.remove("echec");
+                        moves=save;
+                        moveP();
+                    }else{
+                        pass=1;
+                        moves=[];
+                        let fakeTabe;
+                        let saveCoordonnees=coordonnees;
+                        let coordonneesArrivee = positionPA();
+                        let data1=tabJeuNow[coordonnees[0]][coordonnees[1]];
+                        let data2=tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]];
+                        if (turn%2){
+                            fakeTabe=blackPositionNow;
+                            blackPositionNow[me[0]][me[1]] = positionArrivee;
+                            tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                            tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=namePA;
+                            isEchec2();
+                            blackPositionNow=fakeTabe;
+                            coordonnees=saveCoordonnees;
+                            tabJeuNow[coordonnees[0]][coordonnees[1]]=data1;
+                            tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=data2;
+                        }else {
+                            fakeTabe=whitePositionNow;
+                            whitePositionNow[me[0]][me[1]] = positionArrivee;
+                            tabJeuNow[coordonnees[0]][coordonnees[1]]=null;
+                            tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=namePA;
+                            isEchec2();
+                            whitePositionNow=fakeTabe;
+                            coordonnees=saveCoordonnees;
+                            tabJeuNow[coordonnees[0]][coordonnees[1]]=data1;
+                            tabJeuNow[coordonneesArrivee[0]][coordonneesArrivee[1]]=data2;
+                        }
+                        moves=save;
+                        if (!echec){
+                            moveP();
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+    }
+
+
+
+</script>
+</html>
+
+
